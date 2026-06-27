@@ -2,270 +2,93 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>RUSCONI · Arcade 80s·90s</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RUSCONI · Venti</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Chakra+Petch:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --void:#0c021f; --void-2:#19053a;
-    --magenta:#ff2e97; --cyan:#05d9e8; --gold:#ffd319; --paper:#f3eaff;
-    --celeste:#75aadb; --sun:#f6b40e; --ink:#0b2545; --white:#f7fbff;
+  body {
+    margin: 0;
+    background: #0c021f;
+    color: #f3eaff;
+    font-family: 'Press Start 2P', monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: 20px;
+    text-align: center;
   }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%}
-  body{
-    min-height:100dvh; font-family:"Chakra Petch",system-ui,sans-serif; color:var(--paper);
-    background:radial-gradient(120% 80% at 50% -10%, var(--void-2) 0%, var(--void) 55%, #050010 100%);
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:clamp(14px,4vw,26px);
-    padding:max(20px,env(safe-area-inset-top)) 18px max(20px,env(safe-area-inset-bottom));
-    overflow-x:hidden; position:relative;
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #ff2e97;
+    text-shadow: 3px 3px 0 #05d9e8;
   }
-  body::before{
-    content:""; position:fixed; inset:auto 0 0 0; height:42vh; z-index:0; pointer-events:none;
-    background:linear-gradient(transparent, rgba(255,46,151,.06)),
-      repeating-linear-gradient(transparent 0 38px, rgba(5,217,232,.16) 38px 40px);
-    transform:perspective(40vh) rotateX(72deg); transform-origin:bottom;
-    mask-image:linear-gradient(transparent, #000 60%);
+  .video-container {
+    width: 100%;
+    max-width: 420px;
+    border: 4px solid #ff2e97;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(255, 46, 151, 0.5);
+    margin-bottom: 30px;
   }
-  body::after{
-    content:""; position:fixed; inset:0; z-index:60; pointer-events:none;
-    background:repeating-linear-gradient(rgba(0,0,0,0) 0 2px, rgba(0,0,0,.16) 2px 3px);
-    mix-blend-mode:multiply;
+  video {
+    width: 100%;
+    display: block;
   }
-  .stage{position:relative; z-index:5; width:100%; max-width:440px; display:flex; flex-direction:column; align-items:center; gap:clamp(14px,4vw,24px)}
-  header{text-align:center; line-height:1}
-  .eyebrow{font-family:"Press Start 2P",monospace; font-size:.58rem; letter-spacing:.18em; color:var(--cyan); text-shadow:0 0 10px rgba(5,217,232,.7)}
-  h1{font-family:"Press Start 2P",monospace; font-size:clamp(1.35rem,8vw,2rem); margin:.55rem 0 .35rem; color:var(--paper); text-shadow:3px 3px 0 var(--magenta), -2px -2px 0 var(--cyan)}
-  .sub{font-size:.85rem; letter-spacing:.3em; color:var(--gold); text-transform:uppercase}
-
-  .screen{
-    position:relative; width:100%; aspect-ratio:1/1; border-radius:18px; padding:10px;
-    background:linear-gradient(145deg,#2a0a55,#0a0220);
-    box-shadow:0 0 0 2px rgba(255,46,151,.55),0 0 26px rgba(255,46,151,.45),0 0 60px rgba(5,217,232,.25),inset 0 0 30px rgba(0,0,0,.6);
+  .link {
+    display: inline-block;
+    background: #ffd319;
+    color: #0c021f;
+    padding: 18px 32px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: bold;
+    box-shadow: 0 6px 0 #9a6b00;
+    transition: transform 0.1s ease;
   }
-  .tube{position:absolute; inset:10px; border-radius:10px; overflow:hidden; background:#000}
-  .tube video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:2; display:block; background:transparent}
-
-  .tap{
-    position:absolute; inset:10px; z-index:9; border:none; border-radius:10px; cursor:pointer;
-    background:rgba(5,2,20,.45); color:var(--paper); font-family:"Press Start 2P",monospace;
-    font-size:.6rem; letter-spacing:.06em; line-height:1.6; text-align:center; display:grid; place-items:center; backdrop-filter:blur(2px);
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .sound{
-    position:absolute; right:16px; bottom:16px; z-index:8; width:46px; height:46px; border-radius:50%;
-    border:2px solid var(--cyan); background:rgba(5,5,16,.72); color:var(--cyan); font-size:1.15rem; cursor:pointer;
-    display:grid; place-items:center; backdrop-filter:blur(4px);
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .hud{
-    position:absolute; top:16px; left:16px; right:16px; z-index:10;
-    display:flex; justify-content:space-between; align-items:center;
-    font-family:"Press Start 2P",monospace; font-size:.7rem;
-  }
-  .score{color:var(--gold); text-shadow:0 0 8px var(--gold)}
-  .highscore{color:var(--cyan); opacity:.8}
-
-  .controls{width:100%; display:flex; flex-direction:column; gap:12px; margin-top:8px}
-  .btn{
-    --c:var(--magenta); font-family:"Press Start 2P",monospace; font-size:.78rem; letter-spacing:.04em;
-    color:#0c021f; background:var(--c); border:none; border-radius:14px; padding:18px 16px;
-    display:flex; align-items:center; justify-content:center; gap:12px; cursor:pointer;
-    box-shadow:0 6px 0 color-mix(in srgb,var(--c) 60%, #000);
-    transition:transform .1s ease, box-shadow .1s ease;
-    width:100%;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  .btn:active{transform:translateY(4px); box-shadow:0 2px 0 color-mix(in srgb,var(--c) 60%, #000);}
-  .btn.gold{--c:var(--gold)}
-  .btn.cyan{--c:var(--cyan)}
-
-  .instructions{
-    font-size:.65rem;
-    color:var(--cyan);
-    text-align:center;
-    opacity:.7;
-    margin-top:4px;
-    letter-spacing:.05em;
+  .link:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #9a6b00;
   }
 </style>
 </head>
 <body>
-  <div class="stage">
-    <header>
-      <div class="eyebrow">PRESS · START</div>
-      <h1>RUSCONI</h1>
-      <div class="sub">Arcade · 80s · 90s</div>
-    </header>
 
-    <div class="screen" id="screen">
-      <div class="tube">
-        <video id="clip" playsinline webkit-playsinline></video>
-      </div>
+  <h1>RUSCONI</h1>
+  <p style="margin-bottom: 30px; color: #05d9e8; font-size: 0.9rem;">80s · 90s</p>
 
-      <div class="hud">
-        <div><span class="score" id="score">000000</span></div>
-        <div><span class="highscore">HI <span id="highscore">124000</span></span></div>
-      </div>
-
-      <button class="tap" id="tapPlay">TOCA PARA EMPEZAR</button>
-      <button class="sound" id="soundBtn">🔇</button>
-    </div>
-
-    <div class="controls">
-      <button class="btn" id="hitBtn">🔥 <span>HIT THE BUNNY</span></button>
-      <button class="btn gold" id="champBtn">⭐ <span>VER CAMPEÓN</span></button>
-      <button class="btn cyan" id="resetBtn">REINICIAR PUNTOS</button>
-    </div>
-
-    <div class="instructions">
-      Tocá el botón rosa para sumar puntos
-    </div>
+  <div class="video-container">
+    <video id="clip" autoplay loop muted playsinline>
+      <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny_320x180.mp4" type="video/mp4">
+    </video>
   </div>
 
-  <!-- OVERLAY CAMPEÓN -->
-  <div class="champ" id="champ" aria-hidden="true">
-    <button class="back" id="backBtn">← VOLVER</button>
-    <h2>¡CAMPEÓN DEL MUNDO!</h2>
-    <div class="stars">★ ★ ★</div>
-
-    <div class="frame" id="frame">
-      <div class="ph">
-        <div class="tag">SUBÍ TU FOTO</div>
-        <p>El día que Argentina se convirtió en campeona del mundo</p>
-        <label class="pill sun">
-          Cargar foto
-          <input type="file" id="photoIn" accept="image/*">
-        </label>
-      </div>
-    </div>
-
-    <div class="row">
-      <label class="pill">
-        Cargar Himno
-        <input type="file" id="himnoIn" accept="audio/*">
-      </label>
-      <button class="pill sun" id="playHimno">Reproducir Himno</button>
-    </div>
-  </div>
+  <a href="https://maximilianotaranto.medium.com" class="link" target="_blank">
+    IR A VALENTINA VALIENTE (VENTI)
+  </a>
 
 <script>
-const $ = id => document.getElementById(id);
-
-const video = $('clip');
-const tapBtn = $('tapPlay');
-const soundBtn = $('soundBtn');
-const hitBtn = $('hitBtn');
-const champBtn = $('champBtn');
-const resetBtn = $('resetBtn');
-const champScreen = $('champ');
-const scoreEl = $('score');
-const highscoreEl = $('highscore');
-
-let score = 0;
-let highscore = parseInt(localStorage.getItem('rusconi_highscore')) || 124000;
-highscoreEl.textContent = String(highscore).padStart(6, '0');
-
-function updateScore() {
-  scoreEl.textContent = String(score).padStart(6, '0');
-  if (score > highscore) {
-    highscore = score;
-    localStorage.setItem('rusconi_highscore', highscore);
-    highscoreEl.textContent = String(highscore).padStart(6, '0');
-  }
-}
-
-// Video
-video.src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny_320x180.mp4';
-video.loop = true;
-video.muted = true;
-video.playsInline = true;
-
-function tryPlayVideo() {
-  const p = video.play();
-  if (p) p.catch(() => {});
-}
-
-tapBtn.addEventListener('click', () => {
-  tryPlayVideo();
-  tapBtn.style.display = 'none';
-});
-
-// Soporte touch para botones principales
-function addTouchSupport(el) {
-  el.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    el.style.transform = 'scale(0.95)';
-  }, {passive: false});
-
-  el.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    el.style.transform = 'scale(1)';
-    // Disparar el click manualmente
-    el.click();
+  const video = document.getElementById('clip');
+  
+  // Intentar reproducir automáticamente
+  video.play().catch(() => {
+    // Si falla el autoplay, mostramos un mensaje sutil
+    console.log('Autoplay bloqueado, esperando interacción');
   });
-}
 
-// Aplicar soporte touch a los botones
-importantes
-addTouchSupport(hitBtn);
-addTouchSupport(champBtn);
-addTouchSupport(resetBtn);
-addTouchSupport(soundBtn);
-
-hitBtn.addEventListener('click', () => {
-  score += 1250;
-  updateScore();
-  hitBtn.style.transform = 'scale(0.92)';
-  setTimeout(() => hitBtn.style.transform = 'scale(1)', 80);
-});
-
-resetBtn.addEventListener('click', () => {
-  score = 0;
-  updateScore();
-});
-
-champBtn.addEventListener('click', () => {
-  champScreen.classList.add('open');
-  champScreen.setAttribute('aria-hidden', 'false');
-});
-
-soundBtn.addEventListener('click', () => {
-  video.muted = !video.muted;
-  soundBtn.textContent = video.muted ? '🔇' : '🔊';
-  if (!video.muted) tryPlayVideo();
-});
-
-$('backBtn').addEventListener('click', () => {
-  champScreen.classList.remove('open');
-  champScreen.setAttribute('aria-hidden', 'true');
-});
-
-// Cargar foto y himno
-$('photoIn').addEventListener('change', e => {
-  const f = e.target.files[0]; if(!f) return;
-  const r = new FileReader();
-  r.onload = ev => $('frame').innerHTML = `<img src="${ev.target.result}">`;
-  r.readAsDataURL(f);
-});
-
-let himno = new Audio();
-$('himnoIn').addEventListener('change', e => {
-  const f = e.target.files[0]; if(!f) return;
-  himno.src = URL.createObjectURL(f);
-});
-$('playHimno').addEventListener('click', () => { if(himno.src) himno.play(); });
-
-console.log('%c[RUSCONI] Botones mejorados con soporte táctil', 'color:#05d9e8');
+  // Si el usuario toca la pantalla, intentamos reproducir
+  document.body.addEventListener('click', () => {
+    if (video.paused) {
+      video.play();
+    }
+  }, { once: true });
 </script>
+
 </body>
 </html>
