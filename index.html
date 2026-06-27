@@ -82,6 +82,15 @@
   .btn.gold{--c:var(--gold)}
   .btn.cyan{--c:var(--cyan)}
 
+  .instructions{
+    font-size:.65rem;
+    color:var(--cyan);
+    text-align:center;
+    opacity:.7;
+    margin-top:4px;
+    letter-spacing:.05em;
+  }
+
   .champ{
     position:fixed; inset:0; z-index:100; display:none; flex-direction:column; align-items:center; justify-content:center;
     gap:18px; text-align:center; color:var(--ink); padding:max(18px,env(safe-area-inset-top)) 18px max(18px,env(safe-area-inset-bottom));
@@ -122,35 +131,39 @@
         <video id="clip" playsinline webkit-playsinline></video>
       </div>
 
-      <!-- HUD de puntuación -->
+      <!-- HUD -->
       <div class="hud">
         <div><span class="score" id="score">000000</span></div>
-        <div><span class="highscore">HI <span id="highscore">000000</span></span></div>
+        <div><span class="highscore">HI <span id="highscore">124000</span></span></div>
       </div>
 
-      <button class="tap" id="tapPlay">TOCA PARA JUGAR</button>
+      <button class="tap" id="tapPlay">TOCA PARA EMPEZAR</button>
       <button class="sound" id="soundBtn">🔇</button>
     </div>
 
     <div class="controls">
       <button class="btn" id="hitBtn">🔥 <span>HIT THE BUNNY</span></button>
       <button class="btn gold" id="champBtn">⭐ <span>VER CAMPEÓN</span></button>
-      <button class="btn cyan" id="resetBtn">RESET SCORE</button>
+      <button class="btn cyan" id="resetBtn">REINICIAR PUNTOS</button>
+    </div>
+
+    <div class="instructions">
+      Tocá el botón rosa para sumar puntos. ¡Intenta superar tu récord!
     </div>
   </div>
 
   <!-- OVERLAY CAMPEÓN -->
   <div class="champ" id="champ" aria-hidden="true">
-    <button class="back" id="backBtn">← VOLVER</button>
+    <button class="back" id="backBtn">← VOLVER AL ARCADE</button>
     <h2>¡CAMPEÓN DEL MUNDO!</h2>
     <div class="stars">★ ★ ★</div>
 
     <div class="frame" id="frame">
       <div class="ph">
-        <div class="tag">SUBÍ TU FOTO</div>
-        <p>El día que la Argentina se convirtió en campeona del mundo</p>
+        <div class="tag">SUBÍ TU FOTO DEL 18 DE DICIEMBRE</div>
+        <p>El día que Argentina se convirtió en campeona del mundo</p>
         <label class="pill sun">
-          Cargar foto
+          Cargar mi foto
           <input type="file" id="photoIn" accept="image/*">
         </label>
       </div>
@@ -158,7 +171,7 @@
 
     <div class="row">
       <label class="pill">
-        Cargar Himno
+        Cargar el Himno
         <input type="file" id="himnoIn" accept="audio/*">
       </label>
       <button class="pill sun" id="playHimno">Reproducir Himno</button>
@@ -166,7 +179,7 @@
   </div>
 
 <script>
-// ==================== NÚCLEO FUNCIONAL ====================
+// ==================== NÚCLEO ====================
 const $ = id => document.getElementById(id);
 
 const video = $('clip');
@@ -182,25 +195,24 @@ const highscoreEl = $('highscore');
 let score = 0;
 let highscore = parseInt(localStorage.getItem('rusconi_highscore')) || 124000;
 
-// Actualizar HUD
-function updateHUD() {
+highscoreEl.textContent = String(highscore).padStart(6, '0');
+
+function updateScore() {
   scoreEl.textContent = String(score).padStart(6, '0');
-  highscoreEl.textContent = String(highscore).padStart(6, '0');
+  if (score > highscore) {
+    highscore = score;
+    localStorage.setItem('rusconi_highscore', highscore);
+    highscoreEl.textContent = String(highscore).padStart(6, '0');
+  }
 }
 
-// Cargar high score
-updateHUD();
-
-// ==================== VIDEO ====================
-// Usamos un video público ligero de ejemplo (puedes reemplazarlo)
-const VIDEO_URL = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny_320x180.mp4';
-
-video.src = VIDEO_URL;
+// Video
+video.src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny_320x180.mp4';
 video.loop = true;
 video.muted = true;
 video.playsInline = true;
 
-// Intentar reproducir automáticamente
+// Iniciar video
 tapBtn.addEventListener('click', () => {
   video.play().then(() => {
     tapBtn.style.display = 'none';
@@ -210,41 +222,35 @@ tapBtn.addEventListener('click', () => {
 });
 
 // Sonido
-tap soundBtn.addEventListener('click', () => {
+soundBtn.addEventListener('click', () => {
   video.muted = !video.muted;
   soundBtn.textContent = video.muted ? '🔇' : '🔊';
   if (!video.muted) video.play();
 });
 
-// ==================== MECÁNICA DE JUEGO ====================
-function addScore(points) {
-  score += points;
-  if (score > highscore) {
-    highscore = score;
-    localStorage.setItem('rusconi_highscore', highscore);
-  }
-  updateHUD();
-
-  // Efecto visual
-  scoreEl.style.transform = 'scale(1.3)';
-  setTimeout(() => scoreEl.style.transform = 'scale(1)', 120);
-}
-
-// Botón principal de interacción (Hit the Bunny)
+// Juego principal
 hitBtn.addEventListener('click', () => {
-  addScore(1250);
-  // Pequeño feedback visual
-  hitBtn.style.transform = 'scale(0.92)';
+  score += 1250;
+  updateScore();
+
+  // Feedback visual
+  hitBtn.style.transform = 'scale(0.9)';
   setTimeout(() => hitBtn.style.transform = 'scale(1)', 80);
+
+  // Pequeño efecto en pantalla
+  const flash = document.createElement('div');
+  flash.style.cssText = 'position:absolute;inset:0;background:rgba(255,46,151,0.15);pointer-events:none;border-radius:10px';
+  $('screen').appendChild(flash);
+  setTimeout(() => flash.remove(), 120);
 });
 
 // Reset
 resetBtn.addEventListener('click', () => {
   score = 0;
-  updateHUD();
+  updateScore();
 });
 
-// ==================== PANTALLA CAMPEÓN ====================
+// Pantalla Campeón
 champBtn.addEventListener('click', () => {
   champScreen.classList.add('open');
   champScreen.setAttribute('aria-hidden', 'false');
@@ -268,48 +274,46 @@ $('photoIn').addEventListener('change', e => {
 });
 
 // Himno
-let himnoAudio = new Audio();
+let himno = new Audio();
 $('himnoIn').addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
-  himnoAudio.src = URL.createObjectURL(file);
+  himno.src = URL.createObjectURL(file);
 });
 
 $('playHimno').addEventListener('click', () => {
-  if (himnoAudio.src) {
-    himnoAudio.play();
+  if (himno.src) {
+    himno.play();
   } else {
-    alert('Primero cargá un archivo de audio (el himno)');
+    alert('Primero cargá un archivo de audio con el himno');
   }
 });
 
-// Confeti
 function spawnConfetti() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const existing = document.querySelectorAll('.confetti');
-  existing.forEach(el => el.remove());
+  document.querySelectorAll('.confetti').forEach(el => el.remove());
 
   const colors = ['#75aadb', '#ffffff', '#f6b40e'];
-  for (let i = 0; i < 28; i++) {
+  for (let i = 0; i < 30; i++) {
     const c = document.createElement('span');
     c.className = 'confetti';
     c.style.left = Math.random() * 100 + '%';
     c.style.background = colors[i % colors.length];
-    c.style.animationDuration = (3 + Math.random() * 2.5) + 's';
+    c.style.animationDuration = (3 + Math.random() * 2.8) + 's';
     c.style.animationDelay = (Math.random() * 2) + 's';
     champScreen.appendChild(c);
   }
 }
 
-// Bonus automático cada cierto tiempo (para que se sienta vivo)
+// Bonus automático
 setInterval(() => {
   if (document.visibilityState === 'visible' && score > 0) {
-    addScore(350);
+    score += 350;
+    updateScore();
   }
-}, 8500);
+}, 9000);
 
-// Mensaje inicial
-console.log('%c[RUSCONI] Experiencia funcional cargada ✓', 'color:#05d9e8');
+console.log('%c[RUSCONI] Versión final lista para humanos ✓', 'color:#05d9e8');
 </script>
 </body>
 </html>
