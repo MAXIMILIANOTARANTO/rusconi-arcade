@@ -53,6 +53,10 @@
     position:absolute; inset:10px; z-index:9; border:none; border-radius:10px; cursor:pointer;
     background:rgba(5,2,20,.45); color:var(--paper); font-family:"Press Start 2P",monospace;
     font-size:.6rem; letter-spacing:.06em; line-height:1.6; text-align:center; display:grid; place-items:center; backdrop-filter:blur(2px);
+    transition: all 0.2s ease;
+  }
+  .tap:hover {
+    background: rgba(5,217,232,0.3);
   }
 
   .sound{
@@ -91,31 +95,20 @@
     letter-spacing:.05em;
   }
 
-  .champ{
-    position:fixed; inset:0; z-index:100; display:none; flex-direction:column; align-items:center; justify-content:center;
-    gap:18px; text-align:center; color:var(--ink); padding:max(18px,env(safe-area-inset-top)) 18px max(18px,env(safe-area-inset-bottom));
-    background:linear-gradient(180deg,var(--celeste) 0%, var(--white) 45%, var(--celeste) 100%); overflow:hidden;
+  .video-error {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    color: var(--paper);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    font-size: 0.8rem;
+    z-index: 10;
   }
-  .champ.open{display:flex}
-  .champ .back{
-    position:absolute; top:max(14px,env(safe-area-inset-top)); left:14px;
-    font-family:"Press Start 2P",monospace; font-size:.55rem; color:var(--ink);
-    background:rgba(247,251,255,.85); border:2px solid var(--ink); padding:9px 12px; border-radius:10px; cursor:pointer;
-  }
-  .champ h2{font-family:"Press Start 2P",monospace; font-size:clamp(1rem,5.5vw,1.5rem); line-height:1.5; text-shadow:2px 2px 0 var(--sun); z-index:2}
-  .frame{
-    width:min(82vw,380px); aspect-ratio:4/5; border-radius:16px; overflow:hidden; background:#cfe2f5;
-    border:5px solid var(--white); box-shadow:0 12px 40px rgba(11,37,69,.35); display:grid; place-items:center; z-index:2;
-  }
-  .frame img{width:100%; height:100%; object-fit:cover; display:block}
-  .row{display:flex; gap:12px; flex-wrap:wrap; justify-content:center; z-index:2}
-  .pill{
-    font-family:"Chakra Petch",sans-serif; font-weight:600; font-size:.92rem; color:var(--ink);
-    cursor:pointer; background:var(--white); border:2px solid var(--ink); border-radius:999px; padding:11px 16px;
-  }
-  .pill.sun{background:var(--sun); border-color:#9a6b00}
-  .confetti{position:absolute; top:-10px; width:9px; height:14px; opacity:.9; animation:fall linear infinite; z-index:1}
-  @keyframes fall{to{transform:translateY(108vh) rotate(540deg)}}
 </style>
 </head>
 <body>
@@ -129,6 +122,12 @@
     <div class="screen" id="screen">
       <div class="tube">
         <video id="clip" playsinline webkit-playsinline></video>
+        <div class="video-error" id="videoError">
+          <p>No se pudo reproducir el video.</p>
+          <p style="margin-top: 10px; font-size: 0.7rem; opacity: 0.8;">
+            Tocá el botón de abajo para intentar de nuevo.
+          </p>
+        </div>
       </div>
 
       <!-- HUD -->
@@ -191,6 +190,7 @@ const resetBtn = $('resetBtn');
 const champScreen = $('champ');
 const scoreEl = $('score');
 const highscoreEl = $('highscore');
+const videoError = $('videoError');
 
 let score = 0;
 let highscore = parseInt(localStorage.getItem('rusconi_highscore')) || 124000;
@@ -206,26 +206,51 @@ function updateScore() {
   }
 }
 
-// Video
+// ==================== VIDEO MEJORADO ====================
 video.src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny_320x180.mp4';
 video.loop = true;
 video.muted = true;
 video.playsInline = true;
 
-// Iniciar video
+// Función mejorada para reproducir video
+function playVideo() {
+  videoError.style.display = 'none';
+  
+  const playPromise = video.play();
+  
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      tapBtn.style.display = 'none';
+    }).catch((error) => {
+      console.log('Video play failed:', error);
+      // Mostrar mensaje de error amigable
+      videoError.style.display = 'flex';
+      tapBtn.style.display = 'grid';
+      tapBtn.textContent = 'TOCAR PARA INTENTAR DE NUEVO';
+    });
+  }
+}
+
+// Iniciar video al tocar el botón
 tapBtn.addEventListener('click', () => {
-  video.play().then(() => {
-    tapBtn.style.display = 'none';
-  }).catch(() => {
-    tapBtn.style.display = 'grid';
-  });
+  playVideo();
+});
+
+// Intentar reproducir automáticamente cuando el video está listo
+video.addEventListener('canplay', () => {
+  // Solo intentar autoplay si el usuario ya interactuó antes
+  if (document.visibilityState === 'visible') {
+    // No forzamos autoplay automático por políticas de navegadores
+  }
 });
 
 // Sonido
-soundBtn.addEventListener('click', () => {
+tap soundBtn.addEventListener('click', () => {
   video.muted = !video.muted;
   soundBtn.textContent = video.muted ? '🔇' : '🔊';
-  if (!video.muted) video.play();
+  if (!video.muted && video.paused) {
+    playVideo();
+  }
 });
 
 // Juego principal
@@ -233,11 +258,9 @@ hitBtn.addEventListener('click', () => {
   score += 1250;
   updateScore();
 
-  // Feedback visual
   hitBtn.style.transform = 'scale(0.9)';
   setTimeout(() => hitBtn.style.transform = 'scale(1)', 80);
 
-  // Pequeño efecto en pantalla
   const flash = document.createElement('div');
   flash.style.cssText = 'position:absolute;inset:0;background:rgba(255,46,151,0.15);pointer-events:none;border-radius:10px';
   $('screen').appendChild(flash);
@@ -313,7 +336,7 @@ setInterval(() => {
   }
 }, 9000);
 
-console.log('%c[RUSCONI] Versión final lista para humanos ✓', 'color:#05d9e8');
+console.log('%c[RUSCONI] Video mejorado - más confiable en móviles', 'color:#05d9e8');
 </script>
 </body>
 </html>
